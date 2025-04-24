@@ -18,7 +18,42 @@ class RiskAssessmentTool extends LitElement {
       "Cybersecurity Risk",
       "Operational Risk"
     ];
-    this.questions = [/* [Same 25 questions here, omitted for brevity] */];
+    this.questions = [
+      // Infrastructure
+      "Are all critical hardware assets regularly maintained and inventoried?",
+      "Is the network infrastructure protected with redundant failover systems?",
+      "Do systems and storage devices have current firmware and patch levels?",
+      "Is there a disaster recovery plan for server and data center outages?",
+      "Are access controls and physical security measures in place for all infrastructure?",
+
+      // Application
+      "Is there a version control system in place for application software?",
+      "Are user roles and permissions reviewed periodically across all apps?",
+      "Is customer transaction data encrypted in transit and at rest?",
+      "Are application logs regularly monitored for anomalies?",
+      "Do applications undergo regular security and functionality testing?",
+
+      // Vendor
+      "Do vendors have a documented incident response policy?",
+      "Is there a current and binding SLA for each critical vendor?",
+      "Are vendor systems audited for compliance with banking standards?",
+      "Does the bank have contingency plans if a vendor fails?",
+      "Are vendor security controls aligned with NLNB’s policies?",
+
+      // Cybersecurity
+      "Are endpoint security solutions (AV/EDR) deployed across all user machines?",
+      "Is multi-factor authentication enforced for all administrative access?",
+      "Are phishing and social engineering simulations conducted regularly?",
+      "Is there a centralized log management system to detect threats?",
+      "Are firewalls and intrusion detection systems regularly updated?",
+
+      // Operational
+      "Are employee access rights promptly removed upon termination?",
+      "Are there defined and tested backup and recovery procedures?",
+      "Are change management procedures followed for all system updates?",
+      "Are helpdesk incident trends analyzed for root causes?",
+      "Is staff training provided regularly for IT and cybersecurity protocols?"
+    ];
     this.results = {};
     this.submitted = false;
   }
