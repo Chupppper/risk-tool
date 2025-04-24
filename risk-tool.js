@@ -87,25 +87,41 @@ class RiskAssessmentTool extends LitElement {
 
   renderPieChart() {
     const total = this.results.scores.reduce((a, b) => a + b, 0);
+    if (total === 0) return html`<p style="text-align: center;">No data to display in chart.</p>`;
+
+    const center = 150;
+    const radius = 150;
     let angleStart = 0;
 
-    return html`<svg width="300" height="300" viewBox="0 0 32 32">
-      ${this.results.categoryBreakdown.map((item, i) => {
-        const value = item.score / total;
-        const angleEnd = angleStart + value * 360;
-        const largeArc = value > 0.5 ? 1 : 0;
-        const x1 = 16 + 16 * Math.cos((angleStart - 90) * Math.PI / 180);
-        const y1 = 16 + 16 * Math.sin((angleStart - 90) * Math.PI / 180);
-        const x2 = 16 + 16 * Math.cos((angleEnd - 90) * Math.PI / 180);
-        const y2 = 16 + 16 * Math.sin((angleEnd - 90) * Math.PI / 180);
-        angleStart = angleEnd;
+    return html`
+      <svg width="300" height="300" viewBox="0 0 300 300">
+        ${this.results.categoryBreakdown.map((item, i) => {
+          const value = item.score / total;
+          const angleEnd = angleStart + value * 360;
+          const largeArc = value > 0.5 ? 1 : 0;
+          const x1 = center + radius * Math.cos((angleStart - 90) * Math.PI / 180);
+          const y1 = center + radius * Math.sin((angleStart - 90) * Math.PI / 180);
+          const x2 = center + radius * Math.cos((angleEnd - 90) * Math.PI / 180);
+          const y2 = center + radius * Math.sin((angleEnd - 90) * Math.PI / 180);
 
-        return html`<path
-          d="M16,16 L${x1},${y1} A16,16 0 ${largeArc},1 ${x2},${y2} Z"
-          fill="${['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'][i]}"
-        ></path>`;
-      })}
-    </svg>`;
+          const midAngle = (angleStart + angleEnd) / 2;
+          const labelX = center + (radius - 40) * Math.cos((midAngle - 90) * Math.PI / 180);
+          const labelY = center + (radius - 40) * Math.sin((midAngle - 90) * Math.PI / 180);
+
+          angleStart = angleEnd;
+
+          return html`
+            <path
+              d="M${center},${center} L${x1},${y1} A${radius},${radius} 0 ${largeArc},1 ${x2},${y2} Z"
+              fill="${['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'][i]}"
+            ></path>
+            <text x="${labelX}" y="${labelY}" font-size="12" text-anchor="middle" fill="#000">
+              ${item.category.split(' ')[0]}
+            </text>
+          `;
+        })}
+      </svg>
+    `;
   }
 
   static styles = css`
@@ -145,10 +161,10 @@ class RiskAssessmentTool extends LitElement {
       font-size: 1rem;
     }
     svg {
+      max-width: 100%;
+      height: auto;
       display: block;
       margin: 1rem auto;
-      width: 300px;
-      height: 300px;
     }
   `;
 
@@ -173,9 +189,10 @@ class RiskAssessmentTool extends LitElement {
         <div class="results">
           <h3>Risk Results Summary</h3>
           <ul>
-            ${this.results.categoryBreakdown.map(r => html`
-              <li><strong>${r.category}:</strong> ${r.score}</li>
-            `)}
+            ${this.results.categoryBreakdown.map(r => {
+              const percentage = ((r.score / this.results.scores.reduce((a, b) => a + b, 0)) * 100).toFixed(1);
+              return html`<li><strong>${r.category}:</strong> ${r.score} (${percentage}%)</li>`;
+            })}
           </ul>
           <p><strong>Riskiest Category:</strong> ${this.results.riskiestCategory}</p>
           ${this.renderPieChart()}
