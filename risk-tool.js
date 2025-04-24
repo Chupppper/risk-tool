@@ -19,35 +19,26 @@ class RiskAssessmentTool extends LitElement {
       "Operational Risk"
     ];
     this.questions = [
-      // Infrastructure
       "Are all critical hardware assets regularly maintained and inventoried?",
       "Is the network infrastructure protected with redundant failover systems?",
       "Do systems and storage devices have current firmware and patch levels?",
       "Is there a disaster recovery plan for server and data center outages?",
       "Are access controls and physical security measures in place for all infrastructure?",
-
-      // Application
       "Is there a version control system in place for application software?",
       "Are user roles and permissions reviewed periodically across all apps?",
       "Is customer transaction data encrypted in transit and at rest?",
       "Are application logs regularly monitored for anomalies?",
       "Do applications undergo regular security and functionality testing?",
-
-      // Vendor
       "Do vendors have a documented incident response policy?",
       "Is there a current and binding SLA for each critical vendor?",
       "Are vendor systems audited for compliance with banking standards?",
       "Does the bank have contingency plans if a vendor fails?",
       "Are vendor security controls aligned with NLNB’s policies?",
-
-      // Cybersecurity
       "Are endpoint security solutions (AV/EDR) deployed across all user machines?",
       "Is multi-factor authentication enforced for all administrative access?",
       "Are phishing and social engineering simulations conducted regularly?",
       "Is there a centralized log management system to detect threats?",
       "Are firewalls and intrusion detection systems regularly updated?",
-
-      // Operational
       "Are employee access rights promptly removed upon termination?",
       "Are there defined and tested backup and recovery procedures?",
       "Are change management procedures followed for all system updates?",
@@ -85,43 +76,53 @@ class RiskAssessmentTool extends LitElement {
     };
   }
 
-  renderPieChart() {
-    const total = this.results.scores.reduce((a, b) => a + b, 0);
-    if (total === 0) return html`<p style="text-align: center;">No data to display in chart.</p>`;
-
-    const center = 150;
-    const radius = 150;
-    let angleStart = 0;
-
+  renderBarChart() {
+    const maxScore = Math.max(...this.results.scores);
     return html`
-      <svg width="300" height="300" viewBox="0 0 300 300">
-        ${this.results.categoryBreakdown.map((item, i) => {
-          const value = item.score / total;
-          const angleEnd = angleStart + value * 360;
-          const largeArc = value > 0.5 ? 1 : 0;
-          const x1 = center + radius * Math.cos((angleStart - 90) * Math.PI / 180);
-          const y1 = center + radius * Math.sin((angleStart - 90) * Math.PI / 180);
-          const x2 = center + radius * Math.cos((angleEnd - 90) * Math.PI / 180);
-          const y2 = center + radius * Math.sin((angleEnd - 90) * Math.PI / 180);
-
-          const midAngle = (angleStart + angleEnd) / 2;
-          const labelX = center + (radius - 40) * Math.cos((midAngle - 90) * Math.PI / 180);
-          const labelY = center + (radius - 40) * Math.sin((midAngle - 90) * Math.PI / 180);
-
-          angleStart = angleEnd;
-
+      <div class="bar-chart">
+        ${this.results.categoryBreakdown.map((item) => {
+          const widthPercent = (item.score / maxScore) * 100;
           return html`
-            <path
-              d="M${center},${center} L${x1},${y1} A${radius},${radius} 0 ${largeArc},1 ${x2},${y2} Z"
-              fill="${['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'][i]}"
-            ></path>
-            <text x="${labelX}" y="${labelY}" font-size="12" text-anchor="middle" fill="#000">
-              ${item.category.split(' ')[0]}
-            </text>
+            <div class="bar-label">${item.category}</div>
+            <div class="bar-container">
+              <div class="bar-fill" style="width: ${widthPercent}%;"></div>
+              <span class="bar-score">${item.score}</span>
+            </div>
           `;
         })}
-      </svg>
+      </div>
     `;
+  }
+
+  getRecommendations(category) {
+    const recs = {
+      "Infrastructure Risk": [
+        "Conduct a full audit of hardware assets.",
+        "Implement a disaster recovery strategy with redundancy.",
+        "Ensure all firmware is regularly patched and access is controlled."
+      ],
+      "Application Risk": [
+        "Enforce regular security testing on applications.",
+        "Audit and update permission sets and roles.",
+        "Ensure secure development lifecycle (SDLC) procedures are followed."
+      ],
+      "Vendor Risk": [
+        "Review third-party SLAs and risk scoring.",
+        "Request updated compliance certifications from all vendors.",
+        "Develop fallback plans in case a key vendor fails."
+      ],
+      "Cybersecurity Risk": [
+        "Roll out organization-wide phishing simulation training.",
+        "Implement stronger endpoint protection and MFA.",
+        "Invest in centralized logging and intrusion detection."
+      ],
+      "Operational Risk": [
+        "Strengthen change management processes.",
+        "Ensure regular staff training for IT operations.",
+        "Analyze support tickets for recurring issues."
+      ]
+    };
+    return recs[category] || ["No recommendations available."];
   }
 
   static styles = css`
@@ -160,18 +161,53 @@ class RiskAssessmentTool extends LitElement {
       cursor: pointer;
       font-size: 1rem;
     }
-    svg {
-      max-width: 100%;
-      height: auto;
-      display: block;
-      margin: 1rem auto;
+
+    .bar-chart {
+      margin-top: 2rem;
+    }
+    .bar-label {
+      margin: 0.5rem 0 0.2rem;
+      font-weight: bold;
+    }
+    .bar-container {
+      position: relative;
+      background: #e0e0e0;
+      border-radius: 4px;
+      height: 24px;
+      margin-bottom: 1rem;
+    }
+    .bar-fill {
+      background: #4A90E2;
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.3s ease;
+    }
+    .bar-score {
+      position: absolute;
+      top: 0;
+      right: 10px;
+      line-height: 24px;
+      font-size: 14px;
+      color: #fff;
+      font-weight: bold;
+    }
+
+    .recommendations {
+      margin-top: 2rem;
+      background: #f1f9ff;
+      padding: 1rem;
+      border-left: 4px solid #4A90E2;
+      border-radius: 8px;
+    }
+    .recommendations h3 {
+      margin-top: 0;
+      color: #0077cc;
     }
   `;
 
   render() {
     return html`
       <h2>NLNB Risk Assessment Tool</h2>
-
       ${!this.submitted ? html`
         ${this.questions.map((q, i) => html`
           <div class="question">
@@ -195,7 +231,13 @@ class RiskAssessmentTool extends LitElement {
             })}
           </ul>
           <p><strong>Riskiest Category:</strong> ${this.results.riskiestCategory}</p>
-          ${this.renderPieChart()}
+          ${this.renderBarChart()}
+          <div class="recommendations">
+            <h3>Recommended Actions for ${this.results.riskiestCategory}</h3>
+            <ul>
+              ${this.getRecommendations(this.results.riskiestCategory).map(rec => html`<li>${rec}</li>`)}
+            </ul>
+          </div>
         </div>
       `}
     `;
