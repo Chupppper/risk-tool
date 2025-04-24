@@ -125,6 +125,23 @@ class RiskAssessmentTool extends LitElement {
     return recs[category] || ["No recommendations available."];
   }
 
+  getTopContributors(category) {
+    const categoryIndex = this.riskCategories.indexOf(category);
+    const start = categoryIndex * 5;
+    const end = start + 5;
+
+    const questionsWithScores = this.questions
+      .slice(start, end)
+      .map((question, i) => ({
+        question,
+        score: this.responses[start + i]
+      }))
+      .sort((a, b) => b.score - a.score)
+      .filter(item => item.score > 0);
+
+    return questionsWithScores;
+  }
+
   static styles = css`
     :host {
       display: block;
@@ -203,6 +220,18 @@ class RiskAssessmentTool extends LitElement {
       margin-top: 0;
       color: #0077cc;
     }
+
+    .contributors {
+      margin-top: 2rem;
+      background: #fff7e6;
+      padding: 1rem;
+      border-left: 4px solid #ffa500;
+      border-radius: 8px;
+    }
+    .contributors h3 {
+      margin-top: 0;
+      color: #cc8400;
+    }
   `;
 
   render() {
@@ -236,6 +265,14 @@ class RiskAssessmentTool extends LitElement {
             <h3>Recommended Actions for ${this.results.riskiestCategory}</h3>
             <ul>
               ${this.getRecommendations(this.results.riskiestCategory).map(rec => html`<li>${rec}</li>`)}
+            </ul>
+          </div>
+          <div class="contributors">
+            <h3>Top Contributing Risks in ${this.results.riskiestCategory}</h3>
+            <ul>
+              ${this.getTopContributors(this.results.riskiestCategory).map(item => html`
+                <li>"${item.question}" — Severity: ${item.score}</li>
+              `)}
             </ul>
           </div>
         </div>
